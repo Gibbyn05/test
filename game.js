@@ -1757,16 +1757,40 @@ window.onRefreshTransfers = onRefreshTransfers;
 window.startNewGame = startNewGame;
 
 // ─── INIT ──────────────────────────────────────────────────────────────────────
+function hideLoadingScreen(cb) {
+  var ls = document.getElementById('loading-screen');
+  if (!ls) { if (cb) cb(); return; }
+  ls.classList.add('hidden');
+  setTimeout(function() {
+    ls.style.display = 'none';
+    if (cb) cb();
+  }, 450);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   injectCSS();
-  var loaded = loadGame();
-  if (loaded && G.club.name) {
-    G.screen = 'dashboard';
-    renderScreen();
-    showToast('Welcome back, ' + G.manager.name + '!');
-  } else {
-    showWelcomeScreen();
-  }
+
+  var label = document.getElementById('loading-label');
+  var steps = ['Loading players...', 'Building league...', 'Preparing stadium...', 'Ready!'];
+  var i = 0;
+  var stepInterval = setInterval(function() {
+    if (label && steps[i]) label.textContent = steps[i];
+    i++;
+    if (i >= steps.length) clearInterval(stepInterval);
+  }, 300);
+
+  setTimeout(function() {
+    var loaded = loadGame();
+    hideLoadingScreen(function() {
+      if (loaded && G.club.name) {
+        G.screen = 'dashboard';
+        renderScreen();
+        showToast('Welcome back, ' + G.manager.name + '!');
+      } else {
+        showWelcomeScreen();
+      }
+    });
+  }, 1400);
 });
 
 })();
